@@ -1,0 +1,33 @@
+.rating-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.star-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.star {
+  color: var(--primary);
+  display: block;
+}
+
+.star.empty {
+  color: var(--text-secondary);
+  opacity: 0.3;
+}
+
+.star.half {
+  position: relative;
+  overflow: hidden;
+}
+
+.star.half .star {
+  clip-path: inset(0 50% 0 0);
+}
+

@@ -1,0 +1,68 @@
+.reply-form {
+  margin-top: 12px;
+  padding: 16px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.reply-form-content {
+  margin-bottom: 12px;
+}
+
+.reply-textarea {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.reply-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.reply-textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.reply-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancel-btn {
+  padding: 6px 12px;
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.submit-reply-btn {
+  padding: 6px 16px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.submit-reply-btn:hover {
+  background-color: var(--secondary);
+}
+

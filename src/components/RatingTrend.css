@@ -1,0 +1,26 @@
+.rating-trend-container {
+  width: 100%;
+  padding: 20px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+.rating-trend-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .rating-trend-container {
+    padding: 16px;
+  }
+}
+

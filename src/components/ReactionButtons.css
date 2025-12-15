@@ -1,0 +1,36 @@
+.reaction-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.reaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.reaction-btn:hover {
+  border-color: var(--primary);
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+}
+
+.reaction-btn.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.reaction-btn span {
+  font-size: 14px;
+  font-weight: 500;
+}
+

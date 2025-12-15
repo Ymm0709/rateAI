@@ -1,0 +1,136 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+  padding: 0 20px;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 16px;
+  transition: color 0.2s;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.nav-link.active {
+  color: var(--primary);
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-link {
+  color: var(--text-secondary);
+}
+
+.register-link {
+  background-color: var(--primary);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+.register-link:hover {
+  background-color: #2563eb;
+  color: white;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--primary);
+  background-color: var(--bg-secondary);
+}
+
+.theme-toggle__text {
+  font-size: 14px;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.logout-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+

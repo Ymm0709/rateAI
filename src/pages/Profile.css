@@ -1,0 +1,238 @@
+.profile {
+  padding: 40px 0;
+}
+
+.profile-header {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  border: 2px solid var(--border);
+}
+
+.user-info h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.user-level {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.user-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.stat-card svg {
+  color: var(--primary);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.profile-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: none;
+  color: var(--text-secondary);
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.profile-tab:hover {
+  color: var(--text-primary);
+}
+
+.profile-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.comment-history, .rating-history {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comment-card, .rating-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.comment-meta, .rating-meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.comment-text {
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.rating-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rating-chip {
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.rating-chip strong {
+  color: var(--primary);
+}
+
+.settings-section {
+  max-width: 600px;
+}
+
+.settings-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.settings-card h3 {
+  font-size: 20px;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.setting-item {
+  margin-bottom: 20px;
+}
+
+.setting-item label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.setting-item input {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.setting-item input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.save-btn {
+  padding: 12px 24px;
+  background-color: var(--primary);
+  color: white;
+  border-radius: 6px;
+  font-size: 16px;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.save-btn:hover {
+  background-color: var(--secondary);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .avatar-section {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .user-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

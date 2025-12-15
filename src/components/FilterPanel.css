@@ -1,0 +1,141 @@
+.filter-panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.filter-header h3 {
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  color: var(--text-secondary);
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.filter-section {
+  margin-bottom: 24px;
+}
+
+.filter-label {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag-btn {
+  padding: 8px 16px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.tag-btn:hover {
+  border-color: var(--primary);
+  color: var(--text-primary);
+}
+
+.tag-btn.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.score-filter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.score-slider {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.score-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--primary);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.score-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--primary);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.score-value {
+  min-width: 40px;
+  text-align: right;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.sort-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.reset-btn {
+  padding: 10px 20px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+

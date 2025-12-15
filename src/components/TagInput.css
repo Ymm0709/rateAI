@@ -1,0 +1,94 @@
+.tag-input-container {
+  margin-top: 16px;
+}
+
+.tags-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.tag-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-radius: 16px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+}
+
+.tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.tag-remove:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.add-tag-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.add-tag-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: var(--bg-secondary);
+}
+
+.tag-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-input {
+  padding: 6px 12px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--primary);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.tag-input:focus {
+  outline: none;
+  border-color: var(--secondary);
+}
+
+.tag-confirm {
+  padding: 6px 12px;
+  background-color: var(--primary);
+  color: white;
+  border-radius: 16px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.tag-confirm:hover {
+  background-color: var(--secondary);
+}
+
