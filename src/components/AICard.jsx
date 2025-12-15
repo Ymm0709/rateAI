@@ -38,70 +38,70 @@ function AICard({ ai }) {
 
   return (
     <>
-      <Link to={`/ai/${ai.id}`} className="ai-card">
-        <div className="ai-card-header">
-          <div className="ai-info">
-            <div className="ai-name-row">
-              <h3 className="ai-name">{ai.name}</h3>
-              <span className="ai-developer">
-                <Building2 size={14} />
-                {ai.developer || '未注明开发商'}
-              </span>
-            </div>
-            <p className="ai-description">{ai.description}</p>
+    <Link to={`/ai/${ai.id}`} className="ai-card">
+      <div className="ai-card-header">
+        <div className="ai-info">
+          <div className="ai-name-row">
+            <h3 className="ai-name">{ai.name}</h3>
+            <span className="ai-developer">
+              <Building2 size={14} />
+              {ai.developer || '未注明开发商'}
+            </span>
           </div>
-          <button
-            className={`favorite-btn ${isFavorite ? 'active' : ''}`}
-            onClick={handleFavoriteClick}
-            aria-label="收藏"
-          >
-            <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-          </button>
+          <p className="ai-description">{ai.description}</p>
         </div>
+        <button
+          className={`favorite-btn ${isFavorite ? 'active' : ''}`}
+          onClick={handleFavoriteClick}
+          aria-label="收藏"
+        >
+          <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
+      </div>
 
-        <div className="ai-rating">
+      <div className="ai-rating">
           <InteractiveRatingStars 
             size={24} 
             onRate={handleQuickRate}
           />
           <div className="rating-meta">
-            <span className="score-value">{ai.averageScore.toFixed(1)}</span>
-            <span className="rating-count">({ai.ratingCount} 评价)</span>
+          <span className="score-value">{ai.averageScore.toFixed(1)}</span>
+        <span className="rating-count">({ai.ratingCount} 评价)</span>
           </div>
-        </div>
+      </div>
 
-        <div className="ai-details">
-          <div className="detail-item">
-            <span className="detail-label">万能性:</span>
+      <div className="ai-details">
+        <div className="detail-item">
+          <span className="detail-label">万能性:</span>
             <span className="detail-value">{ai.ratings.versatility}/10</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">图像生成:</span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">图像生成:</span>
             <span className="detail-value">{ai.ratings.imageGeneration}/10</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">信息查询:</span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">信息查询:</span>
             <span className="detail-value">{ai.ratings.informationQuery}/10</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">学习辅助:</span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">学习辅助:</span>
             <span className="detail-value">{ai.ratings.studyAssistance}/10</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">性价比:</span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">性价比:</span>
             <span className="detail-value">{ai.ratings.valueForMoney}/10</span>
-          </div>
         </div>
+      </div>
 
-        <TagList tags={ai.tags} />
+      <TagList tags={ai.tags} />
 
-        <div className="ai-footer">
-          <span className="price">{ai.price}</span>
-          <span className="reactions">
-            👍 {ai.reactions.thumbUp} · 🤯 {ai.reactions.amazing} · 😭 {ai.reactions.bad}
-          </span>
-        </div>
-      </Link>
+      <div className="ai-footer">
+        <span className="price">{ai.price}</span>
+        <span className="reactions">
+          👍 {ai.reactions.thumbUp} · 🤯 {ai.reactions.amazing} · 😭 {ai.reactions.bad}
+        </span>
+      </div>
+    </Link>
     </>
   )
 }
