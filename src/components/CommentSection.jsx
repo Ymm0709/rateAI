@@ -252,7 +252,7 @@ function CommentItem({ comment, onToggleReplies, onReply, showReplies, replyingT
           {/* 显示所有回复 */}
           {showReplies && comment.replies && comment.replies.length > 0 && (
             <div className="replies-list">
-          {comment.replies.map(reply => (
+              {comment.replies.map(reply => (
                 <ReplyItem
                   key={reply.id}
                   reply={reply}
@@ -288,15 +288,15 @@ function ReplyItem({ reply, commentId, onReply, replyingTo, onSubmitReply, onCan
   return (
     <div className={`reply-item ${depth > 0 ? 'nested-reply' : ''}`} style={{ marginLeft: `${depth * 20}px` }}>
       <div className="reply-header">
-              <div className="reply-author">
+        <div className="reply-author">
           {reply.replyToAuthor && (
             <span className="reply-to-indicator">@{reply.replyToAuthor}</span>
           )}
-                <span className="author-name">{reply.author}</span>
-                <span className="reply-date">{reply.date}</span>
+          <span className="author-name">{reply.author}</span>
+          <span className="reply-date">{reply.date}</span>
         </div>
-              </div>
-              <p className="reply-content">{reply.content}</p>
+      </div>
+      <p className="reply-content">{reply.content}</p>
       <div className="reply-actions">
         <button 
           className="reply-action-btn"
@@ -305,7 +305,7 @@ function ReplyItem({ reply, commentId, onReply, replyingTo, onSubmitReply, onCan
           <Reply size={14} />
           <span>回复</span>
         </button>
-            </div>
+      </div>
 
       {/* 回复表单 - 回复回复 */}
       {isReplying && depth < maxDepth && (

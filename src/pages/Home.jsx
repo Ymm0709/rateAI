@@ -13,7 +13,7 @@ function Home() {
   const [filters, setFilters] = useState({
     tags: [],
     minScore: 0,
-    sortBy: 'alpha'
+    sortBy: 'score'
   })
 
   const filteredAIs = useMemo(() => {
@@ -33,12 +33,9 @@ function Home() {
     })
 
     return matched.sort((a, b) => {
-      if (filters.sortBy === 'alpha') {
-      return a.name.localeCompare(b.name)
-      }
-      if (filters.sortBy === 'ratingCount') {
-        return b.ratingCount - a.ratingCount
-      }
+      if (filters.sortBy === 'score') return b.averageScore - a.averageScore
+      if (filters.sortBy === 'ratingCount') return b.ratingCount - a.ratingCount
+      if (filters.sortBy === 'alpha') return a.name.localeCompare(b.name)
       return 0
     })
   }, [ais, filters.minScore, filters.sortBy, filters.tags, searchQuery])
@@ -75,13 +72,18 @@ function Home() {
             <button
               className="filter-toggle ghost"
               onClick={() => {
+                const order = ['score', 'ratingCount', 'alpha']
+                const currentIndex = order.indexOf(filters.sortBy)
+                const next = order[(currentIndex + 1) % order.length]
                 setFilters((prev) => ({
                   ...prev,
-                  sortBy: prev.sortBy === 'alpha' ? 'ratingCount' : 'alpha'
+                  sortBy: next
                 }))
               }}
             >
-              {filters.sortBy === 'alpha' ? '按字母' : '按热度'}
+              {filters.sortBy === 'score' && '按评分'}
+              {filters.sortBy === 'ratingCount' && '按热度（评价数）'}
+              {filters.sortBy === 'alpha' && '按字母'}
             </button>
           </div>
         </div>
