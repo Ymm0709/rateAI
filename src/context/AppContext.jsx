@@ -1,5 +1,4 @@
 import { createContext, useContext, useMemo, useState, useEffect } from 'react'
-import { mockAIs as initialAIs, mockComments as initialComments } from '../data/mockData'
 
 const AppContext = createContext(null)
 
@@ -14,14 +13,41 @@ const loadUserFromStorage = () => {
 }
 
 export function AppProvider({ children }) {
-  const [ais, setAIs] = useState(initialAIs)
-  const [comments, setComments] = useState(initialComments)
+  const [ais, setAIs] = useState([])
+  const [comments, setComments] = useState([])
   const [favoriteIds, setFavoriteIds] = useState([])
   const [user, setUser] = useState(loadUserFromStorage)
   const [userActivity, setUserActivity] = useState({
     ratings: [],
     comments: []
   })
+
+  // 从后端加载初始数据
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [aiRes, commentRes] = await Promise.all([
+          fetch('/api/ais'),
+          fetch('/api/comments')
+        ])
+
+        if (aiRes.ok) {
+          const aiData = await aiRes.json()
+          setAIs(Array.isArray(aiData) ? aiData : [])
+        }
+
+        if (commentRes.ok) {
+          const commentData = await commentRes.json()
+          setComments(Array.isArray(commentData) ? commentData : [])
+        }
+      } catch (err) {
+        // 静默处理，防止阻断前端
+        console.error('加载初始数据失败', err)
+      }
+    }
+
+    fetchInitialData()
+  }, [])
 
   // 初始化时加载用户数据
   useEffect(() => {
