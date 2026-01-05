@@ -34,6 +34,10 @@
   filter: brightness(1.2);
 }
 
+.star-btn.filled.rated {
+  color: #3b82f6; /* 蓝色，表示已评分 */
+}
+
 .star-btn:not(:disabled):hover.empty {
   opacity: 0.5;
 }

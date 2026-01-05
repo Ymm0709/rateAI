@@ -29,22 +29,79 @@
 
 ## 安装和运行
 
-### 安装依赖
+### 后端（Django）
+
+#### 安装Python依赖
+```bash
+pip install -r requirements.txt
+```
+
+#### 运行数据库迁移
+```bash
+python manage.py migrate
+```
+
+#### 启动后端服务器
+```bash
+python manage.py runserver
+```
+或者使用启动脚本：
+```bash
+./start-backend.sh
+```
+
+后端服务器将在 `http://127.0.0.1:8000` 运行
+
+#### Django Admin 管理界面
+
+Django Admin 提供了一个Web界面来管理数据库内容：
+
+1. **创建超级用户（首次使用）**：
+   ```bash
+   python manage.py createsuperuser
+   ```
+   或者使用脚本：
+   ```bash
+   ./create_admin.sh
+   ```
+   按提示输入用户名、邮箱和密码。
+
+2. **访问管理界面**：
+   - 确保后端服务器正在运行
+   - 在浏览器打开：`http://127.0.0.1:8000/admin/`
+   - 使用刚才创建的超级用户账号登录
+
+3. **在管理界面中可以**：
+   - 查看和编辑所有用户数据
+   - 管理AI工具信息
+   - 查看和删除评分、评论
+   - 管理标签和收藏
+   - 查看统计数据
+
+### 前端（React + Vite）
+
+#### 安装依赖
 ```bash
 npm install
 ```
 
-### 开发模式
+#### 开发模式
 ```bash
 npm run dev
 ```
+或者使用启动脚本：
+```bash
+./start-dev.sh
+```
 
-### 构建生产版本
+前端服务器将在 `http://localhost:5173` 运行
+
+#### 构建生产版本
 ```bash
 npm run build
 ```
 
-### 预览生产构建
+#### 预览生产构建
 ```bash
 npm run preview
 ```
@@ -108,6 +165,67 @@ Rate_AI/
 - 我的评论
 - 我的评分
 - 账户设置
+
+## 数据管理
+
+### 清理测试数据
+
+项目提供了管理命令来清理测试数据：
+
+#### 删除所有用户数据（保留AI数据）
+```bash
+python manage.py clear_test_data --all
+```
+
+#### 删除指定用户的数据
+```bash
+python manage.py clear_test_data --user <用户名>
+```
+
+#### 重置整个数据库（删除所有数据）
+```bash
+python manage.py clear_test_data --reset
+```
+
+#### 跳过确认提示（谨慎使用）
+```bash
+python manage.py clear_test_data --all --confirm
+```
+
+### 使用Django Shell删除数据
+
+也可以通过Django shell手动删除：
+
+```bash
+python manage.py shell
+```
+
+然后在shell中执行：
+```python
+from backend.models import User
+
+# 删除所有用户（会自动删除相关的评分、评论、收藏等）
+User.objects.all().delete()
+
+# 或删除特定用户
+user = User.objects.get(username='你的用户名')
+user.delete()
+```
+
+### 重置数据库（完全清空）
+
+如果需要完全重置数据库：
+
+```bash
+# 删除数据库文件
+rm db.sqlite3
+
+# 重新创建数据库
+python manage.py migrate
+
+# 如果需要重新导入AI数据
+python manage.py seed_ais
+```
 
 ## 待实现功能
 

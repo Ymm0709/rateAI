@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
-import { User, Lock, LogIn, ArrowLeft } from 'lucide-react'
+import { User, Lock, LogIn, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useAppContext } from '../context/AppContext'
 import './Login.css'
 
@@ -10,33 +10,26 @@ function Login() {
   const { login } = useAppContext()
   const from = location.state?.from?.pathname || '/'
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    if (!formData.email || !formData.password) {
+    if (!formData.username || !formData.password) {
       setError('请填写所有字段')
       setLoading(false)
       return
     }
 
-    // 简单的邮箱格式验证
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      setError('请输入有效的邮箱地址')
-      setLoading(false)
-      return
-    }
-
     try {
-      const result = login(formData.email, formData.password)
+      const result = await login(formData.username, formData.password)
       if (result.success) {
         navigate(from, { replace: true })
       } else {
@@ -77,17 +70,17 @@ function Login() {
           {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="email">
+            <label htmlFor="username">
               <User size={18} />
-              邮箱
+              用户名
             </label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
-              placeholder="请输入您的邮箱"
+              placeholder="请输入您的用户名"
               required
             />
           </div>
@@ -97,15 +90,25 @@ function Login() {
               <Lock size={18} />
               密码
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="请输入您的密码"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="请输入您的密码"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "隐藏密码" : "显示密码"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="login-btn" disabled={loading}>
@@ -128,4 +131,3 @@ function Login() {
 }
 
 export default Login
-

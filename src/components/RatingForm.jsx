@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { Star } from 'lucide-react'
 import './RatingForm.css'
 
-function RatingForm({ aiId, onSubmit }) {
+function RatingForm({ aiId, onSubmit, initialRatings }) {
   const [ratings, setRatings] = useState({
-    versatility: 0,
-    imageGeneration: 0,
-    informationQuery: 0,
-    studyAssistance: 0,
-    valueForMoney: 0
+    versatility: initialRatings?.versatility || 0,
+    imageGeneration: initialRatings?.imageGeneration || 0,
+    informationQuery: initialRatings?.informationQuery || 0,
+    studyAssistance: initialRatings?.studyAssistance || 0,
+    valueForMoney: initialRatings?.valueForMoney || 0
   })
 
   const [hoveredRating, setHoveredRating] = useState({})

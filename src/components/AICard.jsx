@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useMemo } from 'react'
 import { Star, Heart, Building2 } from 'lucide-react'
 import InteractiveRatingStars from './InteractiveRatingStars'
 import TagList from './TagList'
@@ -8,8 +9,19 @@ import './AICard.css'
 function AICard({ ai }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, favoriteIds, toggleFavorite, submitRating } = useAppContext()
+  const { user, favoriteIds, userActivity, toggleFavorite, submitRating } = useAppContext()
   const isFavorite = favoriteIds.includes(ai.id)
+  // 获取用户对该AI的评分（用于显示星星状态）
+  const userRating = useMemo(() => {
+    return userActivity.ratings.find(r => r.aiId === ai.id)
+  }, [userActivity.ratings, ai.id])
+  // 计算平均评分（10分制）
+  const userAverageRating = useMemo(() => {
+    if (!userRating) return null
+    const scores = Object.values(userRating.scores)
+    if (scores.length === 0) return null
+    return scores.reduce((sum, val) => sum + val, 0) / scores.length
+  }, [userRating])
 
   const handleFavoriteClick = (e) => {
     e.preventDefault()
@@ -20,7 +32,7 @@ function AICard({ ai }) {
     toggleFavorite(ai.id)
   }
 
-  const handleQuickRate = (ratingValue) => {
+  const handleQuickRate = async (ratingValue) => {
     if (!user) {
       navigate('/login', { state: { from: location } })
       return
@@ -33,7 +45,8 @@ function AICard({ ai }) {
       studyAssistance: ratingValue,
       valueForMoney: ratingValue
     }
-    submitRating(ai.id, ratingPayload)
+    // 等待评分保存完成，确保状态更新
+    await submitRating(ai.id, ratingPayload)
   }
 
   return (
@@ -63,6 +76,7 @@ function AICard({ ai }) {
           <InteractiveRatingStars 
             size={24} 
             onRate={handleQuickRate}
+            userRating={userAverageRating}
           />
           <div className="rating-meta">
           <span className="score-value">{ai.averageScore.toFixed(1)}</span>

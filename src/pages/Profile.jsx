@@ -59,46 +59,58 @@ function Profile() {
               {user.avatar ? (
                 <img src={user.avatar} alt={user.name} />
               ) : (
-                <User size={40} />
+                <div className="avatar-placeholder">
+                  <User size={40} />
+                </div>
               )}
             </div>
             <div className="user-info">
-              <div className="title-with-img">
-                <img src="https://via.placeholder.com/48x48?text=P" alt="个人页图标占位" />
-                <h1>{user?.name || user?.username || '用户'}</h1>
-              </div>
-              <div className="user-level">
-                <Star size={16} fill="currentColor" />
-                <span>等级 {user?.level || 1}</span>
+              <h1>{user?.name || user?.username || '用户'}</h1>
+              <div className="user-meta">
+                <div className="user-level">
+                  <Star size={16} fill="currentColor" />
+                  <span>等级 {user?.level || 1}</span>
+                </div>
+                <div className="user-email">
+                  <span>{user?.email || ''}</span>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="user-stats">
             <div className="stat-card">
-              <MessageSquare size={24} />
-              <div>
+              <div className="stat-icon">
+                <MessageSquare size={24} />
+              </div>
+              <div className="stat-content">
                 <div className="stat-value">{user?.stats?.comments || userActivity.comments.length || 0}</div>
                 <div className="stat-label">评论</div>
               </div>
             </div>
             <div className="stat-card">
-              <Star size={24} />
-              <div>
+              <div className="stat-icon">
+                <Star size={24} />
+              </div>
+              <div className="stat-content">
                 <div className="stat-value">{user?.stats?.ratings || userActivity.ratings.length || 0}</div>
                 <div className="stat-label">评分</div>
               </div>
             </div>
             <div className="stat-card">
-              <Heart size={24} />
-              <div>
+              <div className="stat-icon">
+                <Heart size={24} />
+              </div>
+              <div className="stat-content">
                 <div className="stat-value">{user?.stats?.favorites || favoriteIds.length || 0}</div>
                 <div className="stat-label">收藏</div>
               </div>
             </div>
             <div className="stat-card">
-              <Star size={24} />
-              <div>
+              <div className="stat-icon">
+                <Star size={24} />
+              </div>
+              <div className="stat-content">
                 <div className="stat-value">{user?.stats?.helpful || 0}</div>
                 <div className="stat-label">获赞</div>
               </div>
@@ -139,13 +151,23 @@ function Profile() {
 
         <div className="profile-content">
           {activeTab === 'favorites' && (
-            <div className="favorites-grid">
-              {favoriteAIs.map(ai => (
-                <AICard key={ai.id} ai={ai} />
-              ))}
-              {favoriteAIs.length === 0 && (
+            <div className="favorites-section">
+              {favoriteAIs.length === 0 ? (
                 <div className="empty-state">
+                  <Heart size={48} className="empty-icon" />
                   <p>还没有收藏任何 AI</p>
+                  <button 
+                    className="action-link-btn"
+                    onClick={() => navigate('/')}
+                  >
+                    去首页看看
+                  </button>
+                </div>
+              ) : (
+                <div className="favorites-grid">
+                  {favoriteAIs.map(ai => (
+                    <AICard key={ai.id} ai={ai} />
+                  ))}
                 </div>
               )}
             </div>
@@ -155,14 +177,35 @@ function Profile() {
             <div className="comment-history">
               {myComments.length === 0 ? (
                 <div className="empty-state">
+                  <MessageSquare size={48} className="empty-icon" />
                   <p>还没有评论，去详情页写一条吧～</p>
+                  <button 
+                    className="action-link-btn"
+                    onClick={() => navigate('/')}
+                  >
+                    去首页看看
+                  </button>
                 </div>
               ) : (
                 myComments.map((comment) => (
                   <div key={comment.id} className="comment-card">
+                    <div className="comment-card-header">
+                      <h3 className="comment-ai">{findAIName(comment.aiId)}</h3>
+                      <button 
+                        className="view-ai-btn"
+                        onClick={() => navigate(`/ai/${comment.aiId}`)}
+                      >
+                        查看详情
+                      </button>
+                    </div>
                     <div className="comment-meta">
-                      <span className="comment-ai">{findAIName(comment.aiId)}</span>
                       <span className="comment-date">{comment.date}</span>
+                      {comment.rating && (
+                        <div className="comment-rating">
+                          <Star size={14} fill="currentColor" />
+                          <span>{comment.rating}/10</span>
+                        </div>
+                      )}
                     </div>
                     <p className="comment-text">{comment.content}</p>
                   </div>
@@ -175,27 +218,67 @@ function Profile() {
             <div className="rating-history">
               {userActivity.ratings.length === 0 ? (
                 <div className="empty-state">
+                  <Star size={48} className="empty-icon" />
                   <p>还没有提交评分，去试试吧！</p>
+                  <button 
+                    className="action-link-btn"
+                    onClick={() => navigate('/')}
+                  >
+                    去首页看看
+                  </button>
                 </div>
               ) : (
-                userActivity.ratings.map((rating) => (
-                  <div key={rating.submittedAt} className="rating-card">
-                    <div className="rating-meta">
-                      <span className="comment-ai">{findAIName(rating.aiId)}</span>
-                      <span className="comment-date">
-                        {new Date(rating.submittedAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="rating-grid">
-                      {Object.entries(rating.scores).map(([key, value]) => (
-                        <div key={key} className="rating-chip">
-                          <span>{key}</span>
-                          <strong>{value}</strong>
+                userActivity.ratings.map((rating) => {
+                  const aiItem = ais.find(a => a.id === rating.aiId)
+                  const averageScore = Object.values(rating.scores).reduce((sum, val) => sum + val, 0) / Object.keys(rating.scores).length
+                  return (
+                    <div key={rating.submittedAt} className="rating-card">
+                      <div className="rating-card-header">
+                        <div className="rating-card-title">
+                          <h3>{findAIName(rating.aiId)}</h3>
+                          <div className="rating-card-score">
+                            <Star size={16} fill="currentColor" />
+                            <span>{averageScore.toFixed(1)}/10</span>
+                          </div>
                         </div>
-                      ))}
+                        <button 
+                          className="view-ai-btn"
+                          onClick={() => navigate(`/ai/${rating.aiId}`)}
+                        >
+                          查看详情
+                        </button>
+                      </div>
+                      <div className="rating-meta">
+                        <span className="comment-date">
+                          {new Date(rating.submittedAt).toLocaleString('zh-CN', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <div className="rating-grid">
+                        {Object.entries(rating.scores).map(([key, value]) => {
+                          const labelMap = {
+                            versatility: '万能性',
+                            imageGeneration: '图像生成',
+                            informationQuery: '信息查询',
+                            studyAssistance: '学习辅助',
+                            valueForMoney: '性价比'
+                          }
+                          return (
+                            <div key={key} className="rating-chip">
+                              <span className="rating-chip-label">{labelMap[key] || key}</span>
+                              <strong className="rating-chip-value">{value}/10</strong>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           )}

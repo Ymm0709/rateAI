@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
-import { User, Lock, Mail, UserPlus, ArrowLeft } from 'lucide-react'
+import { User, Lock, Mail, UserPlus, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useAppContext } from '../context/AppContext'
 import './Register.css'
 
@@ -17,6 +17,8 @@ function Register() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -60,14 +62,17 @@ function Register() {
     }
 
     try {
-      const result = register({
+      const result = await register({
         username: formData.username,
         email: formData.email,
         password: formData.password
       })
       
       if (result.success) {
-        navigate(from, { replace: true })
+        if (result.message) {
+          alert(result.message)
+        }
+        navigate('/login')
       } else {
         setError(result.error || '注册失败，请重试')
       }
@@ -142,15 +147,25 @@ function Register() {
               <Lock size={18} />
               密码
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="请输入密码（至少6个字符）"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="请输入密码（至少6个字符）"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "隐藏密码" : "显示密码"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
@@ -158,15 +173,25 @@ function Register() {
               <Lock size={18} />
               确认密码
             </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="请再次输入密码"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="请再次输入密码"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? "隐藏密码" : "显示密码"}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="register-btn" disabled={loading}>

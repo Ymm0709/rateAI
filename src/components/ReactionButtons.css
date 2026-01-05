@@ -29,6 +29,17 @@
   color: white;
 }
 
+.reaction-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reaction-btn:disabled:hover {
+  border-color: var(--border);
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+}
+
 .reaction-btn span {
   font-size: 14px;
   font-weight: 500;

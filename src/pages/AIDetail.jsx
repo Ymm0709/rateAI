@@ -20,10 +20,12 @@ function AIDetail() {
     ais,
     comments,
     favoriteIds,
+    userActivity,
     toggleFavorite,
     submitRating,
     addComment,
-    addTag
+    addTag,
+    handleReaction
   } = useAppContext()
   const ai = ais.find(a => a.id === parseInt(id))
   const [isFavoriteLocal, setIsFavoriteLocal] = useState(false)
@@ -31,6 +33,11 @@ function AIDetail() {
   const [showReportForm, setShowReportForm] = useState(false)
   const [shareMessage, setShareMessage] = useState('')
   const [reportMessage, setReportMessage] = useState('')
+  const [ratingError, setRatingError] = useState('')
+  
+  // 检查用户是否已经评分过，并获取之前的评分
+  const userRating = user && userActivity.ratings.find(r => r.aiId === ai?.id)
+  const hasRated = !!userRating
 
   // 进入详情页时滚动到顶部
   useEffect(() => {
@@ -155,9 +162,14 @@ function AIDetail() {
               
               <ReactionButtons 
                 reactions={ai.reactions}
+                aiId={ai.id}
+                userReaction={userActivity.reactions[ai.id]}
                 onReaction={(type) => {
-                  // TODO: 实现反应功能
-                  console.log('Reaction:', type)
+                  if (!user) {
+                    navigate('/login', { state: { from: location } })
+                    return
+                  }
+                  handleReaction(ai.id, type)
                 }}
               />
             </div>
@@ -225,18 +237,32 @@ function AIDetail() {
                       return
                     }
                     setShowRatingForm(!showRatingForm)
+                    setRatingError('')
                   }}
                 >
-                  {showRatingForm ? '取消评分' : '我要评分'}
+                  {showRatingForm ? '取消评分' : hasRated ? '修改评分' : '我要评分'}
                 </button>
               </div>
+
+              {ratingError && (
+                <div className="error-message" style={{ marginTop: '10px' }}>
+                  {ratingError}
+                </div>
+              )}
 
               {showRatingForm && (
                 <RatingForm 
                   aiId={ai.id}
+                  initialRatings={userRating?.scores}
                   onSubmit={(payload) => {
-                    setShowRatingForm(false)
-                    submitRating(ai.id, payload)
+                    const result = submitRating(ai.id, payload)
+                    if (result && result.error) {
+                      setRatingError(result.error)
+                      setTimeout(() => setRatingError(''), 3000)
+                    } else {
+                      setShowRatingForm(false)
+                      setRatingError('')
+                    }
                   }}
                 />
               )}
@@ -310,12 +336,17 @@ function AIDetail() {
               </div>
               <TagInput 
                 tags={ai.tags}
+                userTags={userActivity.tags[ai.id] || []}
                 onAddTag={(tag) => {
                   if (!user) {
                     navigate('/login', { state: { from: location } })
                     return
                   }
-                  addTag(ai.id, tag)
+                  const result = addTag(ai.id, tag)
+                  if (result && result.error) {
+                    // 可以显示错误提示
+                    console.log(result.error)
+                  }
                 }}
               />
             </section>

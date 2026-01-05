@@ -2,17 +2,59 @@ from django.db import models
 
 
 class User(models.Model):
+    user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
     password_hash = models.CharField(max_length=255)
     avatar_url = models.URLField(blank=True, null=True)
+    is_approved = models.BooleanField(default=False, help_text='管理员是否已批准该用户')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Django认证系统需要的属性
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    last_login = models.DateTimeField(null=True, blank=True, verbose_name='最后登录时间')
+
+    # 为了兼容Django认证系统，添加这些属性和方法
+    @property
+    def pk(self):
+        """返回主键，Django认证系统使用pk而不是user_id"""
+        return self.user_id
+    
+    @property
+    def id(self):
+        """返回ID"""
+        return self.user_id
+    
+    @property
+    def is_authenticated(self):
+        """用户是否已认证"""
+        return True
+    
+    @property
+    def is_anonymous(self):
+        """用户是否匿名"""
+        return False
+    
+    def get_username(self):
+        """获取用户名"""
+        return self.username
+    
+    def has_perm(self, perm, obj=None):
+        """检查用户权限"""
+        return self.is_superuser
+    
+    def has_module_perms(self, app_label):
+        """检查用户是否有应用权限"""
+        return self.is_superuser
+    
     def __str__(self):
         return self.username
 
 
 class Tag(models.Model):
+    tag_id = models.AutoField(primary_key=True)
     tag_name = models.CharField(max_length=64, unique=True)
 
     def __str__(self):
@@ -20,6 +62,7 @@ class Tag(models.Model):
 
 
 class AIModel(models.Model):
+    ai_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     developer = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
@@ -29,10 +72,6 @@ class AIModel(models.Model):
     avg_score = models.DecimalField(max_digits=4, decimal_places=2, default=0)
     rating_count = models.PositiveIntegerField(default=0)
     favorite_count = models.PositiveIntegerField(default=0)
-    reactions_thumb_up = models.PositiveIntegerField(default=0)
-    reactions_thumb_down = models.PositiveIntegerField(default=0)
-    reactions_amazing = models.PositiveIntegerField(default=0)
-    reactions_bad = models.PositiveIntegerField(default=0)
     tags = models.ManyToManyField(Tag, through='AITag', related_name='ai_models')
 
     def __str__(self):
@@ -40,6 +79,7 @@ class AIModel(models.Model):
 
 
 class Rating(models.Model):
+    rating_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings')
     ai = models.ForeignKey(AIModel, on_delete=models.CASCADE, related_name='ratings')
     versatility_score = models.PositiveSmallIntegerField()
@@ -54,6 +94,7 @@ class Rating(models.Model):
 
 
 class Comment(models.Model):
+    comment_id = models.AutoField(primary_key=True)
     ai = models.ForeignKey(AIModel, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     parent_comment = models.ForeignKey(
@@ -80,6 +121,7 @@ class CommentLike(models.Model):
 
 
 class CommentImage(models.Model):
+    image_id = models.AutoField(primary_key=True)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='images')
     url = models.URLField()
 
