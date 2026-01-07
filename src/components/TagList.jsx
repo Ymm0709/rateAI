@@ -17,7 +17,7 @@ function TagList({ tags }) {
             {tagCount && tagCount > 1 && (
               <span className="tag-count">({tagCount})</span>
             )}
-          </span>
+        </span>
         )
       })}
       {tags.length > 5 && (

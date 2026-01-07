@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #666;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 API连接测试工具</h1>
+    
+    <div class="test-section">
+        <h2>1. 后端连接测试</h2>
+        <button onclick="testBackend()">测试后端连接</button>
+        <div id="backend-result" class="result info">点击按钮开始测试</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. AI数据测试</h2>
+        <button onclick="testAIData()">获取AI数据</button>
+        <div id="ai-result" class="result info">点击按钮开始测试</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 评论数据测试</h2>
+        <button onclick="testCommentData()">获取评论数据</button>
+        <div id="comment-result" class="result info">点击按钮开始测试</div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 完整测试</h2>
+        <button onclick="runAllTests()">运行所有测试</button>
+        <div id="all-result" class="result info">点击按钮开始测试</div>
+    </div>
+
+    <script>
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '正在测试...';
+
+            try {
+                const response = await fetch('/api/ais/', {
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✓ 后端连接成功！\n\n' + JSON.stringify(result, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    const text = await response.text();
+                    resultDiv.textContent = '✗ 后端连接失败\n\n' + JSON.stringify(result, null, 2) + '\n\n错误信息: ' + text;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '✗ 连接错误: ' + error.message + '\n\n' + 
+                    '可能的原因:\n' +
+                    '1. 后端服务未运行 (运行: python3 manage.py runserver)\n' +
+                    '2. 端口不正确 (应该是 8000)\n' +
+                    '3. CORS配置问题\n' +
+                    '4. 代理配置问题 (检查 vite.config.js)';
+            }
+        }
+
+        async function testAIData() {
+            const resultDiv = document.getElementById('ai-result');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '正在获取AI数据...';
+
+            try {
+                const response = await fetch('/api/ais/', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '✗ 请求失败: ' + response.status + ' ' + response.statusText + '\n\n' + text;
+                    return;
+                }
+
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    resultDiv.textContent = `✓ 成功获取 ${data.length} 条AI数据\n\n` +
+                        `示例数据 (第一条):\n${JSON.stringify(data[0], null, 2)}`;
+                } else {
+                    resultDiv.className = 'result info';
+                    resultDiv.textContent = '⚠ 数据为空！\n\n' +
+                        '后端没有AI数据，请运行:\n' +
+                        'python3 manage.py seed_ais';
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '✗ 错误: ' + error.message;
+            }
+        }
+
+        async function testCommentData() {
+            const resultDiv = document.getElementById('comment-result');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '正在获取评论数据...';
+
+            try {
+                const response = await fetch('/api/comments/', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '✗ 请求失败: ' + response.status + ' ' + response.statusText + '\n\n' + text;
+                    return;
+                }
+
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                
+                if (Array.isArray(data)) {
+                    resultDiv.textContent = `✓ 成功获取 ${data.length} 条评论数据\n\n` +
+                        (data.length > 0 ? `示例数据 (第一条):\n${JSON.stringify(data[0], null, 2)}` : '暂无评论数据');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '✗ 数据格式错误: ' + JSON.stringify(data);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '✗ 错误: ' + error.message;
+            }
+        }
+
+        async function runAllTests() {
+            const resultDiv = document.getElementById('all-result');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '正在运行所有测试...\n\n';
+
+            let results = [];
+
+            // 测试后端连接
+            try {
+                const response = await fetch('/api/ais/', { credentials: 'include' });
+                if (response.ok) {
+                    results.push('✓ 后端连接: 成功');
+                } else {
+                    results.push(`✗ 后端连接: 失败 (${response.status})`);
+                }
+            } catch (error) {
+                results.push(`✗ 后端连接: 错误 (${error.message})`);
+            }
+
+            // 测试AI数据
+            try {
+                const response = await fetch('/api/ais/', { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        results.push(`✓ AI数据: 成功 (${data.length}条)`);
+                    } else {
+                        results.push('⚠ AI数据: 为空 (需要运行 seed_ais)');
+                    }
+                } else {
+                    results.push(`✗ AI数据: 失败 (${response.status})`);
+                }
+            } catch (error) {
+                results.push(`✗ AI数据: 错误 (${error.message})`);
+            }
+
+            // 测试评论数据
+            try {
+                const response = await fetch('/api/comments/', { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    results.push(`✓ 评论数据: 成功 (${data.length}条)`);
+                } else {
+                    results.push(`✗ 评论数据: 失败 (${response.status})`);
+                }
+            } catch (error) {
+                results.push(`✗ 评论数据: 错误 (${error.message})`);
+            }
+
+            resultDiv.textContent = '测试完成:\n\n' + results.join('\n');
+            
+            if (results.every(r => r.startsWith('✓') || r.startsWith('⚠'))) {
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>
+

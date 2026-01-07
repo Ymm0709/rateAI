@@ -23,10 +23,7 @@ function CommentSection({ aiId, comments, onAddComment }) {
   }
 
   const handleReply = (commentId, replyId = null, author = null) => {
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
+    // 后端会验证登录
     setReplyingTo({ commentId, replyId, author })
     // 自动展开回复区域
     if (!expandedReplies[commentId]) {
@@ -50,10 +47,7 @@ function CommentSection({ aiId, comments, onAddComment }) {
         <button 
           className="comment-btn"
           onClick={() => {
-            if (!user) {
-              navigate('/login', { state: { from: location } })
-              return
-            }
+            // 后端会验证登录
             setShowCommentForm(!showCommentForm)
           }}
         >
@@ -106,10 +100,7 @@ function CommentItem({ comment, onToggleReplies, onReply, showReplies, replyingT
   const [reportMessage, setReportMessage] = useState('')
 
   const handleReport = () => {
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
+    // 后端会验证登录（如果需要）
     setShowReportForm(true)
   }
 
@@ -125,10 +116,7 @@ function CommentItem({ comment, onToggleReplies, onReply, showReplies, replyingT
   }
 
   const handleUpvote = () => {
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
+    // 后端会验证登录（如果需要）
     if (helpful) {
       setUpvotes(upvotes - 1)
       setHelpful(false)
@@ -140,10 +128,7 @@ function CommentItem({ comment, onToggleReplies, onReply, showReplies, replyingT
   }
 
   const handleDownvote = () => {
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
+    // 后端会验证登录（如果需要）
     setNotHelpful(!notHelpful)
     if (notHelpful) {
       setHelpful(false)

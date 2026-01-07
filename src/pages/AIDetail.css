@@ -198,7 +198,7 @@
 
 .rating-item {
   display: grid;
-  grid-template-columns: 150px 1fr 50px;
+  grid-template-columns: 150px 1fr 80px;
   align-items: center;
   gap: 16px;
 }
@@ -206,6 +206,11 @@
 .rating-label {
   color: var(--text-secondary);
   font-size: 14px;
+}
+
+.rating-stars-container {
+  display: flex;
+  align-items: center;
 }
 
 .rating-bar-container {
@@ -225,6 +230,7 @@
   text-align: right;
   color: var(--text-primary);
   font-weight: 600;
+  font-size: 14px;
 }
 
 .rating-trend-section {

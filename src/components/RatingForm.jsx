@@ -4,6 +4,7 @@ import './RatingForm.css'
 
 function RatingForm({ aiId, onSubmit, initialRatings }) {
   const [ratings, setRatings] = useState({
+    overall: initialRatings?.overall || 0, // 总评分（通用性评价）
     versatility: initialRatings?.versatility || 0,
     imageGeneration: initialRatings?.imageGeneration || 0,
     informationQuery: initialRatings?.informationQuery || 0,
@@ -56,6 +57,22 @@ function RatingForm({ aiId, onSubmit, initialRatings }) {
 
   return (
     <form className="rating-form" onSubmit={handleSubmit}>
+      <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
+        <RatingInput label="总体评价（通用性）" category="overall" />
+        <p style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+          这是对该AI模型的总体通用性评价，与下面的五个细则评分无关
+        </p>
+      </div>
+      
+      <div style={{ marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
+          详细评分（可选）
+        </h3>
+        <p style={{ marginBottom: '16px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+          以下五个方面的评分可以单独打分，每个评分独立计算平均值
+        </p>
+      </div>
+      
       <RatingInput label="万能性 / 广度" category="versatility" />
       <RatingInput label="图像生成能力" category="imageGeneration" />
       <RatingInput label="信息查询能力" category="informationQuery" />

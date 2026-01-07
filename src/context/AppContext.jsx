@@ -972,14 +972,14 @@ export function AppProvider({ children }) {
           }
         }))
       } else {
-        setUserActivity((prev) => {
-          const newReactions = { ...prev.reactions }
-          delete newReactions[aiId]
-          return {
-            ...prev,
-            reactions: newReactions
-          }
-        })
+      setUserActivity((prev) => {
+        const newReactions = { ...prev.reactions }
+        delete newReactions[aiId]
+        return {
+          ...prev,
+          reactions: newReactions
+        }
+      })
       }
 
       // 重新加载AI数据以获取最新的反应数
@@ -994,16 +994,16 @@ export function AppProvider({ children }) {
                 if (ai.id !== aiId) return ai
                 return {
                   ...ai,
-                  reactions: {
+        reactions: {
                     thumbUp: updatedAI.reactions_thumb_up || 0,
                     thumbDown: updatedAI.reactions_thumb_down || 0,
                     amazing: updatedAI.reactions_amazing || 0,
                     bad: updatedAI.reactions_bad || 0
                   }
-                }
+        }
               })
             )
-          }
+    }
         }
       } catch (error) {
         console.error('刷新AI数据失败:', error)

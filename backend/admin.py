@@ -6,12 +6,29 @@ from .models import User, AIModel, Rating, Comment, CommentLike, CommentImage, T
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('user_id', 'username', 'email', 'is_approved', 'created_at', 'get_ratings_count', 'get_comments_count', 'get_favorites_count')
-    list_filter = ('is_approved', 'created_at')
+    list_display = ('user_id', 'username', 'email', 'created_at', 'get_ratings_count', 'get_comments_count', 'get_favorites_count')
+    list_filter = ('created_at',)
     search_fields = ('username', 'email')
-    readonly_fields = ('user_id', 'created_at')
+    readonly_fields = ('user_id', 'created_at', 'last_login', 'is_approved')
     ordering = ('-created_at',)
-    list_editable = ('is_approved',)  # 允许直接在列表页编辑审核状态
+    
+    # 批量操作 - 用于删除用户
+    actions = ['delete_users']
+    
+    # 详情页字段分组 - 排除 password_hash 字段
+    exclude = ('password_hash',)
+    
+    fieldsets = (
+        ('基本信息', {
+            'fields': ('user_id', 'username', 'email', 'avatar_url')
+        }),
+        ('状态', {
+            'fields': ('is_active', 'is_staff', 'is_superuser')
+        }),
+        ('时间信息', {
+            'fields': ('created_at', 'last_login')
+        }),
+    )
     
     class Meta:
         verbose_name = '应用用户'
@@ -28,6 +45,163 @@ class UserAdmin(admin.ModelAdmin):
     def get_favorites_count(self, obj):
         return obj.favorites.count()
     get_favorites_count.short_description = '收藏数量'
+    
+    def save_model(self, request, obj, form, change):
+        """保存模型时，确保密码哈希字段保留原有值"""
+        if change and obj.pk:  # 编辑现有对象
+            # 由于表单中没有 password_hash 字段，必须从数据库中获取原有的值
+            # 避免外键约束失败
+            try:
+                old_obj = User.objects.get(pk=obj.pk)
+                # 始终保留原有的密码哈希值，除非用户明确修改
+                if obj.password_hash != old_obj.password_hash:
+                    # 如果用户没有修改密码，保留原值
+                    if not obj.password_hash or len(obj.password_hash) == 0:
+                        obj.password_hash = old_obj.password_hash
+            except (User.DoesNotExist, AttributeError):
+                pass
+        # 确保 password_hash 不为空
+        if not obj.password_hash:
+            if change and obj.pk:
+                try:
+                    old_obj = User.objects.get(pk=obj.pk)
+                    obj.password_hash = old_obj.password_hash
+                except User.DoesNotExist:
+                    pass
+        super().save_model(request, obj, form, change)
+    
+    @admin.action(description='删除选中的用户及其所有数据')
+    def delete_users(self, request, queryset):
+        """批量删除用户及其所有关联数据"""
+        from .models import CommentImage
+        from django.db.models import Count
+        
+        count = 0
+        deleted_data = {
+            'ratings': 0,
+            'comments': 0,
+            'favorites': 0,
+            'comment_likes': 0,
+            'comment_images': 0
+        }
+        
+        for user in queryset:
+            # 统计要删除的数据（在删除前统计）
+            ratings = user.ratings.all()
+            comments = user.comments.all()
+            deleted_data['ratings'] += ratings.count()
+            deleted_data['comments'] += comments.count()
+            deleted_data['favorites'] += user.favorites.count()
+            deleted_data['comment_likes'] += user.comment_likes.count()
+            
+            # 统计评论图片（通过评论获取）
+            for comment in comments:
+                deleted_data['comment_images'] += comment.images.count()
+            
+            # 删除用户（级联删除会自动删除相关数据）
+            # CASCADE 会自动删除：
+            # - 所有评分 (ratings)
+            # - 所有评论 (comments) 及其回复 (parent_comment)
+            # - 所有评论图片 (comment_images, 通过 Comment CASCADE)
+            # - 所有点赞 (comment_likes)
+            # - 所有收藏 (favorites)
+            user.delete()
+            count += 1
+        
+        self.message_user(
+            request,
+            f'✅ 成功删除了 {count} 个用户及其所有数据：\n'
+            f'  - {deleted_data["ratings"]} 条评分\n'
+            f'  - {deleted_data["comments"]} 条评论\n'
+            f'  - {deleted_data["comment_images"]} 张评论图片\n'
+            f'  - {deleted_data["favorites"]} 个收藏\n'
+            f'  - {deleted_data["comment_likes"]} 个点赞\n'
+            f'\n注意：标签是共享资源，不会因为删除用户而删除。',
+            level='success'
+        )
+    delete_users.short_description = '删除选中的用户'
+    
+    def delete_model(self, request, obj):
+        """删除单个用户模型"""
+        from .models import CommentImage
+        
+        # 统计要删除的数据（在删除前统计，因为删除后无法获取）
+        ratings = obj.ratings.all()
+        comments = obj.comments.all()
+        rating_count = ratings.count()
+        comment_count = comments.count()
+        favorite_count = obj.favorites.count()
+        like_count = obj.comment_likes.count()
+        
+        # 统计评论图片
+        comment_images_count = 0
+        for comment in comments:
+            comment_images_count += comment.images.count()
+        
+        username = obj.username
+        
+        # 删除用户（级联删除会自动删除相关数据）
+        # CASCADE 会自动删除：
+        # - 所有评分 (ratings)
+        # - 所有评论 (comments) 及其回复 (parent_comment CASCADE)
+        # - 所有评论图片 (comment_images, 通过 Comment CASCADE)
+        # - 所有点赞 (comment_likes)
+        # - 所有收藏 (favorites)
+        obj.delete()
+        
+        self.message_user(
+            request,
+            f'✅ 成功删除用户 "{username}" 及其所有数据：\n'
+            f'  - {rating_count} 条评分\n'
+            f'  - {comment_count} 条评论\n'
+            f'  - {comment_images_count} 张评论图片\n'
+            f'  - {favorite_count} 个收藏\n'
+            f'  - {like_count} 个点赞\n'
+            f'\n注意：标签是共享资源，不会因为删除用户而删除。',
+            level='success'
+        )
+    
+    def delete_queryset(self, request, queryset):
+        """批量删除用户（Django Admin 默认调用此方法）"""
+        from .models import CommentImage
+        
+        count = 0
+        deleted_data = {
+            'ratings': 0,
+            'comments': 0,
+            'favorites': 0,
+            'comment_likes': 0,
+            'comment_images': 0
+        }
+        
+        for user in queryset:
+            # 统计要删除的数据（在删除前统计）
+            ratings = user.ratings.all()
+            comments = user.comments.all()
+            deleted_data['ratings'] += ratings.count()
+            deleted_data['comments'] += comments.count()
+            deleted_data['favorites'] += user.favorites.count()
+            deleted_data['comment_likes'] += user.comment_likes.count()
+            
+            # 统计评论图片
+            for comment in comments:
+                deleted_data['comment_images'] += comment.images.count()
+            
+            # 删除用户（级联删除会自动删除相关数据）
+            user.delete()
+            count += 1
+        
+        self.message_user(
+            request,
+            f'✅ 成功删除了 {count} 个用户及其所有数据：\n'
+            f'  - {deleted_data["ratings"]} 条评分\n'
+            f'  - {deleted_data["comments"]} 条评论\n'
+            f'  - {deleted_data["comment_images"]} 张评论图片\n'
+            f'  - {deleted_data["favorites"]} 个收藏\n'
+            f'  - {deleted_data["comment_likes"]} 个点赞\n'
+            f'\n注意：标签是共享资源，不会因为删除用户而删除。',
+            level='success'
+        )
 
 
 class AITagInline(admin.TabularInline):

@@ -21,9 +21,10 @@ echo -e "${BLUE}  Rate AI - 启动服务器${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
-# 检查 Python 是否安装
-if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}错误: 未找到 python3，请先安装 Python${NC}"
+# 检查 Python 3.9 是否安装
+PYTHON_CMD="python3.9"
+if ! command -v python3.9 &> /dev/null; then
+    echo -e "${RED}错误: 未找到 python3.9，请先安装 Python 3.9${NC}"
     exit 1
 fi
 
@@ -35,22 +36,39 @@ fi
 
 # 检查并安装 Python 依赖
 echo -e "${YELLOW}[1/5] 检查 Python 依赖...${NC}"
+# 始终使用 python3.9
 if [ -f "venv/bin/activate" ]; then
     source venv/bin/activate
-    echo -e "${GREEN}使用虚拟环境${NC}"
+    echo -e "${GREEN}使用虚拟环境（Python 3.9）${NC}"
 else
-    echo -e "${YELLOW}使用系统 Python（建议使用虚拟环境）${NC}"
+    echo -e "${YELLOW}使用系统 Python 3.9${NC}"
 fi
 
-# 检查是否需要安装依赖（简单检查）
-if ! python3 -c "import django" 2>/dev/null; then
+# 检查是否需要安装依赖（检查所有必需的包）
+MISSING_DEPS=false
+if ! $PYTHON_CMD -c "import django" 2>/dev/null; then
+    MISSING_DEPS=true
+fi
+if ! $PYTHON_CMD -c "import rest_framework" 2>/dev/null; then
+    MISSING_DEPS=true
+fi
+if ! $PYTHON_CMD -c "import corsheaders" 2>/dev/null; then
+    MISSING_DEPS=true
+fi
+
+if [ "$MISSING_DEPS" = true ]; then
     echo -e "${YELLOW}安装 Python 依赖...${NC}"
-    pip3 install -q -r requirements.txt
+    $PYTHON_CMD -m pip install -r requirements.txt
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}错误: 依赖安装失败${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}依赖安装完成${NC}"
 fi
 
 # 检查并运行数据库迁移
 echo -e "${YELLOW}[2/5] 检查数据库迁移...${NC}"
-python3 manage.py migrate --noinput 2>/dev/null || echo -e "${YELLOW}迁移已完成或跳过${NC}"
+$PYTHON_CMD manage.py migrate --noinput 2>/dev/null || echo -e "${YELLOW}迁移已完成或跳过${NC}"
 
 # 检查并安装 Node 依赖
 echo -e "${YELLOW}[3/5] 检查 Node.js 依赖...${NC}"
@@ -81,7 +99,7 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # 启动后端服务器
 echo -e "${YELLOW}[4/5] 启动后端服务器...${NC}"
-python3 manage.py runserver 127.0.0.1:8000 > backend.log 2>&1 &
+$PYTHON_CMD manage.py runserver 127.0.0.1:8000 > backend.log 2>&1 &
 BACKEND_PID=$!
 
 # 等待后端启动

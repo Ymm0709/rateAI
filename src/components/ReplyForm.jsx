@@ -11,10 +11,7 @@ function ReplyForm({ parentId, replyToAuthor, onCancel, onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
+    // 后端会验证登录
     if (!content.trim()) return
     
     onSubmit({

@@ -13,6 +13,8 @@ function Profile() {
     username: '',
     email: ''
   })
+  const [userComments, setUserComments] = useState([])
+  const [loading, setLoading] = useState(false)
 
   // 如果未登录，重定向到登录页面
   useEffect(() => {
@@ -26,13 +28,61 @@ function Profile() {
     }
   }, [user, navigate])
 
+  // 从后端加载用户的评论
+  useEffect(() => {
+    const loadUserComments = async () => {
+      if (!user) return
+      
+      setLoading(true)
+      try {
+        const response = await fetch('/api/users/comments/', {
+          credentials: 'include'
+        })
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.comments) {
+            // 转换评论格式
+            const normalizedComments = data.comments.map(c => ({
+              id: c.comment_id,
+              aiId: c.ai?.ai_id || c.ai_id,
+              author: c.user?.username || user?.username || '用户',
+              date: c.created_at ? c.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
+              rating: null,
+              content: c.content || '',
+              images: c.images || [],
+              upvotes: c.upvotes || 0,
+              helpful: false,
+              notHelpful: false,
+              replies: []
+            }))
+            setUserComments(normalizedComments)
+          }
+        }
+      } catch (error) {
+        console.error('加载用户评论失败:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user && activeTab === 'comments') {
+      loadUserComments()
+    }
+  }, [user, activeTab])
+
   const favoriteAIs = useMemo(
     () => ais.filter(ai => favoriteIds.includes(ai.id)),
     [ais, favoriteIds]
   )
+  // 优先使用从后端加载的用户评论，如果没有则使用context中的评论
   const myComments = useMemo(
-    () => comments.filter(c => c.author === (user?.name || user?.username)),
-    [comments, user]
+    () => {
+      if (userComments.length > 0) {
+        return userComments
+      }
+      return comments.filter(c => c.author === (user?.name || user?.username))
+    },
+    [comments, user, userComments]
   )
   const findAIName = (aiId) => ais.find(ai => ai.id === aiId)?.name || '未知 AI'
 
@@ -175,7 +225,11 @@ function Profile() {
 
           {activeTab === 'comments' && (
             <div className="comment-history">
-              {myComments.length === 0 ? (
+              {loading ? (
+                <div className="empty-state">
+                  <p>加载中...</p>
+                </div>
+              ) : myComments.length === 0 ? (
                 <div className="empty-state">
                   <MessageSquare size={48} className="empty-icon" />
                   <p>还没有评论，去详情页写一条吧～</p>
@@ -230,7 +284,16 @@ function Profile() {
               ) : (
                 userActivity.ratings.map((rating) => {
                   const aiItem = ais.find(a => a.id === rating.aiId)
-                  const averageScore = Object.values(rating.scores).reduce((sum, val) => sum + val, 0) / Object.keys(rating.scores).length
+                  // 如果有总评分，使用总评分；否则计算平均值
+                  let averageScore = 0
+                  if (rating.scores?.overall && rating.scores.overall > 0) {
+                    averageScore = rating.scores.overall
+                  } else {
+                    const validScores = Object.values(rating.scores || {}).filter(val => val > 0)
+                    if (validScores.length > 0) {
+                      averageScore = validScores.reduce((sum, val) => sum + val, 0) / validScores.length
+                    }
+                  }
                   return (
                     <div key={rating.submittedAt} className="rating-card">
                       <div className="rating-card-header">
@@ -238,7 +301,7 @@ function Profile() {
                           <h3>{findAIName(rating.aiId)}</h3>
                           <div className="rating-card-score">
                             <Star size={16} fill="currentColor" />
-                            <span>{averageScore.toFixed(1)}/10</span>
+                            <span>{Number(averageScore).toFixed(1)}/10</span>
                           </div>
                         </div>
                         <button 
@@ -260,8 +323,9 @@ function Profile() {
                         </span>
                       </div>
                       <div className="rating-grid">
-                        {Object.entries(rating.scores).map(([key, value]) => {
+                        {Object.entries(rating.scores || {}).filter(([key, value]) => value > 0).map(([key, value]) => {
                           const labelMap = {
+                            overall: '总体评价',
                             versatility: '万能性',
                             imageGeneration: '图像生成',
                             informationQuery: '信息查询',
@@ -271,7 +335,7 @@ function Profile() {
                           return (
                             <div key={key} className="rating-chip">
                               <span className="rating-chip-label">{labelMap[key] || key}</span>
-                              <strong className="rating-chip-value">{value}/10</strong>
+                              <strong className="rating-chip-value">{Number(value).toFixed(1)}/10</strong>
                             </div>
                           )
                         })}

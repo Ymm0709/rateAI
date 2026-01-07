@@ -33,8 +33,8 @@ function TagInput({ tags = [], onAddTag, onRemoveTag }) {
     }
     
     onAddTag?.(trimmedTag)
-    setInputValue('')
-    setShowInput(false)
+      setInputValue('')
+      setShowInput(false)
     setTagError('')
   }
 
@@ -69,27 +69,27 @@ function TagInput({ tags = [], onAddTag, onRemoveTag }) {
               {tagCount && tagCount > 1 && (
                 <span className="tag-count">({tagCount})</span>
               )}
-              {onRemoveTag && (
-                <button
-                  className="tag-remove"
+            {onRemoveTag && (
+              <button
+                className="tag-remove"
                   onClick={() => onRemoveTag(tagName)}
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </span>
+              >
+                <X size={14} />
+              </button>
+            )}
+          </span>
           )
         })}
         
         {!showInput ? (
           <div>
-            <button
-              className="add-tag-btn"
-              onClick={handleShowInput}
-            >
-              <Plus size={16} />
-              添加标签
-            </button>
+          <button
+            className="add-tag-btn"
+            onClick={handleShowInput}
+          >
+            <Plus size={16} />
+            添加标签
+          </button>
             <div className="tag-hint" style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>
               可选标签：{ALLOWED_TAGS.join('、')}
             </div>

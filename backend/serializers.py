@@ -85,28 +85,28 @@ class AIModelSerializer(serializers.ModelSerializer):
         try:
             return Reaction.objects.filter(ai=obj, reaction_type='thumbUp').count()
         except Exception:
-            return 0
+        return 0
     
     def get_reactions_thumb_down(self, obj):
         """点踩数"""
         try:
             return Reaction.objects.filter(ai=obj, reaction_type='thumbDown').count()
         except Exception:
-            return 0
+        return 0
     
     def get_reactions_amazing(self, obj):
         """惊叹数"""
         try:
             return Reaction.objects.filter(ai=obj, reaction_type='amazing').count()
         except Exception:
-            return 0
+        return 0
     
     def get_reactions_bad(self, obj):
         """差评数"""
         try:
             return Reaction.objects.filter(ai=obj, reaction_type='bad').count()
         except Exception:
-            return 0
+        return 0
     
     def get_user_reaction(self, obj):
         """获取当前用户的反应类型"""
