@@ -54,7 +54,7 @@ if not exist "node_modules" (
 
 REM 启动后端服务器
 echo [4/5] 启动后端服务器...
-start "Rate AI Backend" /min python manage.py runserver 0.0.0.0:8000
+start "Rate AI Backend" /min python manage.py runserver 0.0.0.0:5009
 
 REM 等待后端启动
 timeout /t 3 /nobreak >nul
@@ -72,10 +72,10 @@ echo ========================================
 echo   ✓ 服务器启动成功！
 echo ========================================
 echo.
-echo 后端服务器: http://127.0.0.1:8000
+echo 后端服务器: http://127.0.0.1:5009
 echo 前端服务器: http://localhost:5173
-echo API 文档:   http://127.0.0.1:8000
-echo 管理界面:   http://127.0.0.1:8000/admin
+echo API 文档:   http://127.0.0.1:5009
+echo 管理界面:   http://127.0.0.1:5009/admin
 echo.
 echo 服务器已在后台运行
 echo 关闭窗口不会停止服务器

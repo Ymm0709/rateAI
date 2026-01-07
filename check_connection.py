@@ -17,20 +17,20 @@ def check_port(host, port):
 def check_backend():
     """检查后端服务"""
     print("=" * 50)
-    print("检查后端服务 (http://127.0.0.1:8000)")
+    print("检查后端服务 (http://127.0.0.1:5009)")
     print("=" * 50)
     
     # 检查端口
-    if check_port('127.0.0.1', 8000):
-        print("✓ 端口 8000 已开放")
+    if check_port('127.0.0.1', 5009):
+        print("✓ 端口 5009 已开放")
     else:
-        print("✗ 端口 8000 未开放 - 后端可能未运行")
+        print("✗ 端口 5009 未开放 - 后端可能未运行")
         print("  请运行: python3 manage.py runserver")
         return False
     
     # 检查API端点
     try:
-        response = requests.get('http://127.0.0.1:8000/api/ais/', timeout=2)
+        response = requests.get('http://127.0.0.1:5009/api/ais/', timeout=2)
         if response.status_code == 200:
             print("✓ API端点可访问")
             print(f"  响应状态: {response.status_code}")
@@ -91,7 +91,7 @@ def check_cors():
     try:
         # 发送OPTIONS请求检查CORS
         response = requests.options(
-            'http://127.0.0.1:8000/api/ais/',
+            'http://127.0.0.1:5009/api/ais/',
             headers={
                 'Origin': 'http://localhost:5173',
                 'Access-Control-Request-Method': 'GET'

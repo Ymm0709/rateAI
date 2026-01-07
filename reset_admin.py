@@ -120,7 +120,7 @@ def create_new_superuser():
     print(f"   邮箱: {user.email}")
     print(f"   密码: {password}")
     print(f"\n现在可以使用以下信息登录 Django Admin:")
-    print(f"   访问地址: http://127.0.0.1:8000/admin/")
+    print(f"   访问地址: http://127.0.0.1:5009/admin/")
     print(f"   用户名: {user.username}")
     print(f"   密码: {password}")
 

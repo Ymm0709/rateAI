@@ -99,7 +99,7 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # 启动后端服务器
 echo -e "${YELLOW}[4/5] 启动后端服务器...${NC}"
-$PYTHON_CMD manage.py runserver 0.0.0.0:8000 > backend.log 2>&1 &
+$PYTHON_CMD manage.py runserver 0.0.0.0:5009 > backend.log 2>&1 &
 BACKEND_PID=$!
 
 # 等待后端启动
@@ -132,10 +132,10 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  ✓ 服务器启动成功！${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "${BLUE}后端服务器:${NC} http://127.0.0.1:8000"
+echo -e "${BLUE}后端服务器:${NC} http://127.0.0.1:5009"
 echo -e "${BLUE}前端服务器:${NC} http://localhost:5173"
-echo -e "${BLUE}API 文档:${NC}   http://127.0.0.1:8000"
-echo -e "${BLUE}管理界面:${NC}   http://127.0.0.1:8000/admin"
+echo -e "${BLUE}API 文档:${NC}   http://127.0.0.1:5009"
+echo -e "${BLUE}管理界面:${NC}   http://127.0.0.1:5009/admin"
 echo ""
 echo -e "${YELLOW}按 Ctrl+C 停止所有服务器${NC}"
 echo ""
