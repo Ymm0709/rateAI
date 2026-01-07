@@ -106,7 +106,7 @@ class AIModelSerializer(serializers.ModelSerializer):
         try:
             return Reaction.objects.filter(ai=obj, reaction_type='bad').count()
         except Exception:
-        return 0
+            return 0
     
     def get_user_reaction(self, obj):
         """获取当前用户的反应类型"""
