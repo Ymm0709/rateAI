@@ -16,16 +16,31 @@ function Home() {
     sortBy: 'alpha'
   })
 
+  // 调试信息
+  console.log('[Home] 当前AI数据:', {
+    count: ais.length,
+    ais: ais.slice(0, 2), // 只显示前两条用于调试
+    isEmpty: ais.length === 0
+  })
+
   const filteredAIs = useMemo(() => {
     const search = searchQuery.trim().toLowerCase()
     const matched = ais.filter((ai) => {
       const matchesSearch =
         ai.name.toLowerCase().includes(search) ||
         ai.developer?.toLowerCase().includes(search) ||
-        ai.tags.some((tag) => tag.toLowerCase().includes(search))
+        ai.tags.some((tag) => {
+          const tagName = typeof tag === 'string' ? tag : (tag.tag_name || tag.name || String(tag))
+          return tagName.toLowerCase().includes(search)
+        })
 
       const matchesTags =
-        filters.tags.length === 0 || filters.tags.some((tag) => ai.tags.includes(tag))
+        filters.tags.length === 0 || filters.tags.some((filterTag) => 
+          ai.tags.some((tag) => {
+            const tagName = typeof tag === 'string' ? tag : (tag.tag_name || tag.name || String(tag))
+            return tagName === filterTag
+          })
+        )
 
       const matchesScore = ai.averageScore >= filters.minScore
 

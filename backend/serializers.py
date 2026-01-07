@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password, check_password
 from django.db.models import Avg
 
-from .models import AIModel, Comment, Tag, User, Rating
+from .models import AIModel, Comment, Tag, User, Rating, AITag, Reaction
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -12,7 +12,8 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class AIModelSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
+    tags = serializers.SerializerMethodField()
+    overall_score = serializers.SerializerMethodField()
     versatility_score = serializers.SerializerMethodField()
     image_generation_score = serializers.SerializerMethodField()
     information_query_score = serializers.SerializerMethodField()
@@ -37,6 +38,7 @@ class AIModelSerializer(serializers.ModelSerializer):
             'rating_count',
             'favorite_count',
             'tags',
+            'overall_score',
             'versatility_score',
             'image_generation_score',
             'information_query_score',
@@ -48,62 +50,114 @@ class AIModelSerializer(serializers.ModelSerializer):
             'reactions_bad',
         ]
     
+    def get_overall_score(self, obj):
+        """计算总评分的平均值（通用性评价）"""
+        result = Rating.objects.filter(ai=obj, overall_score__isnull=False).aggregate(avg=Avg('overall_score'))
+        return round(float(result['avg']), 1) if result['avg'] is not None else 0.0
+    
     def get_versatility_score(self, obj):
-        """计算通用性评分的平均值"""
-        result = Rating.objects.filter(ai=obj).aggregate(avg=Avg('versatility_score'))
-        return float(result['avg']) if result['avg'] is not None else 0.0
+        """计算万能性评分的平均值"""
+        result = Rating.objects.filter(ai=obj, versatility_score__isnull=False).aggregate(avg=Avg('versatility_score'))
+        return round(float(result['avg']), 1) if result['avg'] is not None else 0.0
     
     def get_image_generation_score(self, obj):
         """计算图像生成评分的平均值"""
-        result = Rating.objects.filter(ai=obj).aggregate(avg=Avg('image_generation_score'))
-        return float(result['avg']) if result['avg'] is not None else 0.0
+        result = Rating.objects.filter(ai=obj, image_generation_score__isnull=False).aggregate(avg=Avg('image_generation_score'))
+        return round(float(result['avg']), 1) if result['avg'] is not None else 0.0
     
     def get_information_query_score(self, obj):
         """计算信息查询评分的平均值"""
-        result = Rating.objects.filter(ai=obj).aggregate(avg=Avg('information_query_score'))
-        return float(result['avg']) if result['avg'] is not None else 0.0
+        result = Rating.objects.filter(ai=obj, information_query_score__isnull=False).aggregate(avg=Avg('information_query_score'))
+        return round(float(result['avg']), 1) if result['avg'] is not None else 0.0
     
     def get_study_assistance_score(self, obj):
         """计算学习辅助评分的平均值"""
-        result = Rating.objects.filter(ai=obj).aggregate(avg=Avg('study_assistance_score'))
-        return float(result['avg']) if result['avg'] is not None else 0.0
+        result = Rating.objects.filter(ai=obj, study_assistance_score__isnull=False).aggregate(avg=Avg('study_assistance_score'))
+        return round(float(result['avg']), 1) if result['avg'] is not None else 0.0
     
     def get_value_for_money_score(self, obj):
         """计算性价比评分的平均值"""
-        result = Rating.objects.filter(ai=obj).aggregate(avg=Avg('value_for_money_score'))
-        return float(result['avg']) if result['avg'] is not None else 0.0
+        result = Rating.objects.filter(ai=obj, value_for_money_score__isnull=False).aggregate(avg=Avg('value_for_money_score'))
+        return round(float(result['avg']), 1) if result['avg'] is not None else 0.0
     
     def get_reactions_thumb_up(self, obj):
-        """点赞数（暂时返回0，后续可以添加Reaction模型）"""
-        return 0
+        """点赞数"""
+        try:
+            return Reaction.objects.filter(ai=obj, reaction_type='thumbUp').count()
+        except Exception:
+            return 0
     
     def get_reactions_thumb_down(self, obj):
-        """点踩数（暂时返回0，后续可以添加Reaction模型）"""
-        return 0
+        """点踩数"""
+        try:
+            return Reaction.objects.filter(ai=obj, reaction_type='thumbDown').count()
+        except Exception:
+            return 0
     
     def get_reactions_amazing(self, obj):
-        """惊叹数（暂时返回0，后续可以添加Reaction模型）"""
-        return 0
+        """惊叹数"""
+        try:
+            return Reaction.objects.filter(ai=obj, reaction_type='amazing').count()
+        except Exception:
+            return 0
     
     def get_reactions_bad(self, obj):
-        """差评数（暂时返回0，后续可以添加Reaction模型）"""
-        return 0
+        """差评数"""
+        try:
+            return Reaction.objects.filter(ai=obj, reaction_type='bad').count()
+        except Exception:
+            return 0
+    
+    def get_user_reaction(self, obj):
+        """获取当前用户的反应类型"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            user_reaction = Reaction.objects.filter(
+                ai=obj, 
+                user=request.user
+            ).first()
+            return user_reaction.reaction_type if user_reaction else None
+        return None
+    
+    def get_tags(self, obj):
+        """获取AI的所有标签及其数量（所有用户添加的标签）"""
+        # 返回所有用户为该AI添加的标签及其数量
+        from django.db.models import Count
+        all_tags = AITag.objects.filter(ai=obj).select_related('tag').values(
+            'tag__tag_id', 
+            'tag__tag_name'
+        ).annotate(
+            count=Count('tag_id')
+        ).order_by('-count')
+        return [
+            {
+                'tag_id': tag['tag__tag_id'], 
+                'tag_name': tag['tag__tag_name'],
+                'count': tag['count']
+            } 
+            for tag in all_tags
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    ai = serializers.SerializerMethodField()
+    ai_id = serializers.IntegerField(source='ai.ai_id', read_only=True)
+    images = serializers.SerializerMethodField()
     
     class Meta:
         model = Comment
         fields = [
             'comment_id',
             'ai_id',
+            'ai',
             'user_id',
             'user',
             'parent_comment_id',
             'content',
             'created_at',
             'upvotes',
+            'images',
         ]
     
     def get_user(self, obj):
@@ -113,6 +167,20 @@ class CommentSerializer(serializers.ModelSerializer):
                 'username': obj.user.username
             }
         return None
+    
+    def get_ai(self, obj):
+        if obj.ai:
+            return {
+                'ai_id': obj.ai.ai_id,
+                'name': obj.ai.name
+            }
+        return None
+    
+    def get_images(self, obj):
+        # 获取评论的图片
+        from .models import CommentImage
+        images = CommentImage.objects.filter(comment=obj)
+        return [img.url for img in images]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -143,8 +211,8 @@ class UserSerializer(serializers.ModelSerializer):
         # 加密密码并保存
         password = validated_data.pop('password')
         validated_data['password_hash'] = make_password(password)
-        # 新用户默认未审核
-        validated_data['is_approved'] = False
+        # 新用户默认已激活（不需要审核）
+        validated_data['is_approved'] = True
         return super().create(validated_data)
 
 
@@ -166,6 +234,7 @@ class RatingSerializer(serializers.ModelSerializer):
             'rating_id',
             'user_id',
             'ai_id',
+            'overall_score',
             'versatility_score',
             'image_generation_score',
             'information_query_score',

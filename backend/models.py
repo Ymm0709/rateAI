@@ -7,7 +7,7 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     password_hash = models.CharField(max_length=255)
     avatar_url = models.URLField(blank=True, null=True)
-    is_approved = models.BooleanField(default=False, help_text='管理员是否已批准该用户')
+    is_approved = models.BooleanField(default=True, help_text='用户是否已激活（已废弃，默认True）')
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Django认证系统需要的属性
@@ -82,11 +82,14 @@ class Rating(models.Model):
     rating_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings')
     ai = models.ForeignKey(AIModel, on_delete=models.CASCADE, related_name='ratings')
-    versatility_score = models.PositiveSmallIntegerField()
-    image_generation_score = models.PositiveSmallIntegerField()
-    information_query_score = models.PositiveSmallIntegerField()
-    study_assistance_score = models.PositiveSmallIntegerField()
-    value_for_money_score = models.PositiveSmallIntegerField()
+    # 总评分（通用性评价，独立于下面的五个细则）
+    overall_score = models.PositiveSmallIntegerField(null=True, blank=True, help_text='AI模型的总体评分（0-10分）')
+    # 五个细则评分
+    versatility_score = models.PositiveSmallIntegerField(null=True, blank=True, help_text='万能性评分（0-10分）')
+    image_generation_score = models.PositiveSmallIntegerField(null=True, blank=True, help_text='图像生成能力评分（0-10分）')
+    information_query_score = models.PositiveSmallIntegerField(null=True, blank=True, help_text='信息查询能力评分（0-10分）')
+    study_assistance_score = models.PositiveSmallIntegerField(null=True, blank=True, help_text='学习辅助能力评分（0-10分）')
+    value_for_money_score = models.PositiveSmallIntegerField(null=True, blank=True, help_text='性价比评分（0-10分）')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -129,9 +132,10 @@ class CommentImage(models.Model):
 class AITag(models.Model):
     ai = models.ForeignKey(AIModel, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ai_tags')
 
     class Meta:
-        unique_together = ('ai', 'tag')
+        unique_together = ('ai', 'tag', 'user')
 
 
 class Favorite(models.Model):
@@ -140,4 +144,29 @@ class Favorite(models.Model):
 
     class Meta:
         unique_together = ('user', 'ai')
+
+
+class Reaction(models.Model):
+    """用户对AI的反应（点赞、点踩、惊叹、差评）"""
+    REACTION_TYPES = [
+        ('thumbUp', '点赞'),
+        ('thumbDown', '点踩'),
+        ('amazing', '惊叹'),
+        ('bad', '差评'),
+    ]
+    
+    reaction_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reactions')
+    ai = models.ForeignKey(AIModel, on_delete=models.CASCADE, related_name='reactions')
+    reaction_type = models.CharField(max_length=20, choices=REACTION_TYPES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'ai', 'reaction_type')
+        indexes = [
+            models.Index(fields=['ai', 'reaction_type']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} - {self.ai.name} - {self.reaction_type}'
 

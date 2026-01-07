@@ -25,7 +25,8 @@ function AIDetail() {
     submitRating,
     addComment,
     addTag,
-    handleReaction
+    handleReaction,
+    refreshComments
   } = useAppContext()
   const ai = ais.find(a => a.id === parseInt(id))
   const [isFavoriteLocal, setIsFavoriteLocal] = useState(false)
@@ -34,23 +35,84 @@ function AIDetail() {
   const [shareMessage, setShareMessage] = useState('')
   const [reportMessage, setReportMessage] = useState('')
   const [ratingError, setRatingError] = useState('')
+  const [userRatingFromBackend, setUserRatingFromBackend] = useState(null)
+  
+  const [userReactionFromBackend, setUserReactionFromBackend] = useState(null)
+  
+  // 从后端获取用户的详细评分数据和反应
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!ai) return
+      
+      try {
+        // 获取用户评分（未登录时返回null）
+        const ratingResponse = await fetch(`/api/ratings/${ai.id}/`, { credentials: 'include' })
+        if (ratingResponse.ok) {
+          const ratingData = await ratingResponse.json()
+          if (ratingData.success && ratingData.rating) {
+            setUserRatingFromBackend(ratingData.rating)
+          } else {
+            setUserRatingFromBackend(null)
+          }
+        }
+        
+        // 获取用户反应（未登录时返回null）
+        const reactionResponse = await fetch(`/api/reactions/${ai.id}/`, { credentials: 'include' })
+        if (reactionResponse.ok) {
+          const reactionData = await reactionResponse.json()
+          if (reactionData.success) {
+            setUserReactionFromBackend(reactionData.reaction)
+          } else {
+            setUserReactionFromBackend(null)
+          }
+        }
+      } catch (error) {
+        console.error('获取用户数据失败:', error)
+      }
+    }
+    
+    fetchUserData()
+  }, [ai?.id])
   
   // 检查用户是否已经评分过，并获取之前的评分
   const userRating = user && userActivity.ratings.find(r => r.aiId === ai?.id)
-  const hasRated = !!userRating
+  // 检查是否所有细致分数都有值（不仅仅是overall_score）
+  // 优先使用后端数据，如果没有则使用本地数据
+  const backendRating = userRatingFromBackend
+  const hasDetailedRatings = backendRating ? (
+    (backendRating.versatility_score && backendRating.versatility_score > 0) ||
+    (backendRating.image_generation_score && backendRating.image_generation_score > 0) ||
+    (backendRating.information_query_score && backendRating.information_query_score > 0) ||
+    (backendRating.study_assistance_score && backendRating.study_assistance_score > 0) ||
+    (backendRating.value_for_money_score && backendRating.value_for_money_score > 0)
+  ) : (userRating && userRating.scores && (
+    (userRating.scores.versatility > 0) ||
+    (userRating.scores.imageGeneration > 0) ||
+    (userRating.scores.informationQuery > 0) ||
+    (userRating.scores.studyAssistance > 0) ||
+    (userRating.scores.valueForMoney > 0)
+  ))
+  const hasRated = !!backendRating || !!userRating
 
-  // 进入详情页时滚动到顶部
+  // 进入详情页时滚动到顶部并重新加载数据
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // 立即滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    
+    // 异步刷新评论数据，不阻塞页面渲染
+    if (refreshComments) {
+      // 延迟执行，确保页面已经渲染完成
+      const timer = setTimeout(() => {
+        refreshComments()
+      }, 100)
+      
+      return () => clearTimeout(timer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  // 分享功能
+  // 分享功能（不需要登录）
   const handleShare = async () => {
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
-
     const url = window.location.href
     
     // 尝试使用 Web Share API（移动设备）
@@ -98,12 +160,8 @@ function AIDetail() {
     }
   }
 
-  // 打开举报表单
+  // 打开举报表单（后端会验证登录）
   const handleReport = () => {
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
     setShowReportForm(true)
   }
 
@@ -155,7 +213,12 @@ function AIDetail() {
               <div className="main-rating">
                 <RatingStars score={ai.averageScore} size={24} />
                 <span className="rating-text">
-                  <strong>{ai.averageScore.toFixed(1)}</strong> / 10.0
+                  <strong>{Number(ai.averageScore).toFixed(1)}</strong> / 10.0
+                  {ai.ratings.overall > 0 && (
+                    <span style={{ fontSize: '14px', color: 'var(--text-secondary)', marginLeft: '8px' }}>
+                      (总评: {Number(ai.ratings.overall).toFixed(1)})
+                    </span>
+                  )}
                 </span>
                 <span className="rating-count">({ai.ratingCount} 评价)</span>
               </div>
@@ -163,13 +226,14 @@ function AIDetail() {
               <ReactionButtons 
                 reactions={ai.reactions}
                 aiId={ai.id}
-                userReaction={userActivity.reactions[ai.id]}
-                onReaction={(type) => {
-                  if (!user) {
-                    navigate('/login', { state: { from: location } })
-                    return
+                userReaction={userReactionFromBackend || userActivity.reactions[ai.id]}
+                onReaction={async (type) => {
+                  // 后端会验证登录
+                  const result = await handleReaction(ai.id, type)
+                  if (result && result.success) {
+                    // 更新本地反应状态
+                    setUserReactionFromBackend(result.reaction_type || null)
                   }
-                  handleReaction(ai.id, type)
                 }}
               />
             </div>
@@ -182,13 +246,12 @@ function AIDetail() {
               )}
               <button 
                 className={`action-btn favorite ${isFavorite ? 'active' : ''}`}
-                onClick={() => {
-                  if (!user) {
-                    navigate('/login', { state: { from: location } })
-                    return
+                onClick={async () => {
+                  // 后端会验证登录
+                  const result = await toggleFavorite(ai.id)
+                  if (result && result.success) {
+                    setIsFavoriteLocal(result.is_favorite)
                   }
-                  setIsFavoriteLocal(!isFavoriteLocal)
-                  toggleFavorite(ai.id)
                 }}
               >
                 <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
@@ -232,10 +295,7 @@ function AIDetail() {
                 <button 
                   className="rate-btn"
                   onClick={() => {
-                    if (!user) {
-                      navigate('/login', { state: { from: location } })
-                      return
-                    }
+                    // 后端会验证登录（在提交评分时）
                     setShowRatingForm(!showRatingForm)
                     setRatingError('')
                   }}
@@ -253,70 +313,81 @@ function AIDetail() {
               {showRatingForm && (
                 <RatingForm 
                   aiId={ai.id}
-                  initialRatings={userRating?.scores}
-                  onSubmit={(payload) => {
-                    const result = submitRating(ai.id, payload)
+                  initialRatings={hasDetailedRatings ? (
+                    backendRating ? {
+                      overall: backendRating.overall_score || 0,
+                      versatility: backendRating.versatility_score || 0,
+                      imageGeneration: backendRating.image_generation_score || 0,
+                      informationQuery: backendRating.information_query_score || 0,
+                      studyAssistance: backendRating.study_assistance_score || 0,
+                      valueForMoney: backendRating.value_for_money_score || 0
+                    } : userRating?.scores
+                  ) : { 
+                    overall: backendRating?.overall_score || userRating?.scores?.overall || 0 
+                  }}
+                  onSubmit={async (payload) => {
+                    const result = await submitRating(ai.id, payload)
+                    // 如果error为null，说明已跳转到登录页，不需要显示错误
                     if (result && result.error) {
                       setRatingError(result.error)
                       setTimeout(() => setRatingError(''), 3000)
-                    } else {
+                    } else if (result && result.success) {
                       setShowRatingForm(false)
                       setRatingError('')
+                      // 重新获取用户评分数据
+                      try {
+                        const response = await fetch(`/api/ratings/${ai.id}/`, { credentials: 'include' })
+                        if (response.ok) {
+                          const data = await response.json()
+                          if (data.success && data.rating) {
+                            setUserRatingFromBackend(data.rating)
+                          }
+                        }
+                      } catch (error) {
+                        console.error('重新获取用户评分失败:', error)
+                      }
                     }
+                    // 如果result.error为null，说明已跳转，不做任何操作
                   }}
                 />
               )}
 
+              {/* 五个细则评分 - 使用打星方式显示 */}
               <div className="rating-breakdown">
                 <div className="rating-item">
                   <span className="rating-label">万能性 / 广度</span>
-                  <div className="rating-bar-container">
-                    <div 
-                      className="rating-bar"
-                      style={{ width: `${(ai.ratings.versatility / 10) * 100}%` }}
-                    />
+                  <div className="rating-stars-container">
+                    <RatingStars score={ai.ratings.versatility} size={20} />
                   </div>
-                  <span className="rating-value">{ai.ratings.versatility}/10</span>
+                  <span className="rating-value">{Number(ai.ratings.versatility).toFixed(1)}/10</span>
                 </div>
                 <div className="rating-item">
                   <span className="rating-label">图像生成能力</span>
-                  <div className="rating-bar-container">
-                    <div 
-                      className="rating-bar"
-                      style={{ width: `${(ai.ratings.imageGeneration / 10) * 100}%` }}
-                    />
+                  <div className="rating-stars-container">
+                    <RatingStars score={ai.ratings.imageGeneration} size={20} />
                   </div>
-                  <span className="rating-value">{ai.ratings.imageGeneration}/10</span>
+                  <span className="rating-value">{Number(ai.ratings.imageGeneration).toFixed(1)}/10</span>
                 </div>
                 <div className="rating-item">
                   <span className="rating-label">信息查询能力</span>
-                  <div className="rating-bar-container">
-                    <div 
-                      className="rating-bar"
-                      style={{ width: `${(ai.ratings.informationQuery / 10) * 100}%` }}
-                    />
+                  <div className="rating-stars-container">
+                    <RatingStars score={ai.ratings.informationQuery} size={20} />
                   </div>
-                  <span className="rating-value">{ai.ratings.informationQuery}/10</span>
+                  <span className="rating-value">{Number(ai.ratings.informationQuery).toFixed(1)}/10</span>
                 </div>
                 <div className="rating-item">
                   <span className="rating-label">学习辅助能力</span>
-                  <div className="rating-bar-container">
-                    <div 
-                      className="rating-bar"
-                      style={{ width: `${(ai.ratings.studyAssistance / 10) * 100}%` }}
-                    />
+                  <div className="rating-stars-container">
+                    <RatingStars score={ai.ratings.studyAssistance} size={20} />
                   </div>
-                  <span className="rating-value">{ai.ratings.studyAssistance}/10</span>
+                  <span className="rating-value">{Number(ai.ratings.studyAssistance).toFixed(1)}/10</span>
                 </div>
                 <div className="rating-item">
                   <span className="rating-label">性价比</span>
-                  <div className="rating-bar-container">
-                    <div 
-                      className="rating-bar"
-                      style={{ width: `${(ai.ratings.valueForMoney / 10) * 100}%` }}
-                    />
+                  <div className="rating-stars-container">
+                    <RatingStars score={ai.ratings.valueForMoney} size={20} />
                   </div>
-                  <span className="rating-value">{ai.ratings.valueForMoney}/10</span>
+                  <span className="rating-value">{Number(ai.ratings.valueForMoney).toFixed(1)}/10</span>
                 </div>
               </div>
             </section>
@@ -337,12 +408,9 @@ function AIDetail() {
               <TagInput 
                 tags={ai.tags}
                 userTags={userActivity.tags[ai.id] || []}
-                onAddTag={(tag) => {
-                  if (!user) {
-                    navigate('/login', { state: { from: location } })
-                    return
-                  }
-                  const result = addTag(ai.id, tag)
+                onAddTag={async (tag) => {
+                  // 后端会验证登录
+                  const result = await addTag(ai.id, tag)
                   if (result && result.error) {
                     // 可以显示错误提示
                     console.log(result.error)

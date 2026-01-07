@@ -25,25 +25,15 @@ function AICard({ ai }) {
 
   const handleFavoriteClick = (e) => {
     e.preventDefault()
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
+    // 后端会验证登录
     toggleFavorite(ai.id)
   }
 
   const handleQuickRate = async (ratingValue) => {
-    if (!user) {
-      navigate('/login', { state: { from: location } })
-      return
-    }
-    // 将总体评分转换为各维度评分
+    // 后端会验证登录
+    // 快速评分只提交总评分（通用性评价）
     const ratingPayload = {
-      versatility: ratingValue,
-      imageGeneration: ratingValue,
-      informationQuery: ratingValue,
-      studyAssistance: ratingValue,
-      valueForMoney: ratingValue
+      overall: ratingValue  // 总评分，独立于五个细则
     }
     // 等待评分保存完成，确保状态更新
     await submitRating(ai.id, ratingPayload)
@@ -87,23 +77,23 @@ function AICard({ ai }) {
       <div className="ai-details">
         <div className="detail-item">
           <span className="detail-label">万能性:</span>
-            <span className="detail-value">{ai.ratings.versatility}/10</span>
+          <span className="detail-value">{Number(ai.ratings.versatility).toFixed(1)}/10</span>
         </div>
         <div className="detail-item">
           <span className="detail-label">图像生成:</span>
-            <span className="detail-value">{ai.ratings.imageGeneration}/10</span>
+          <span className="detail-value">{Number(ai.ratings.imageGeneration).toFixed(1)}/10</span>
         </div>
         <div className="detail-item">
           <span className="detail-label">信息查询:</span>
-            <span className="detail-value">{ai.ratings.informationQuery}/10</span>
+          <span className="detail-value">{Number(ai.ratings.informationQuery).toFixed(1)}/10</span>
         </div>
         <div className="detail-item">
           <span className="detail-label">学习辅助:</span>
-            <span className="detail-value">{ai.ratings.studyAssistance}/10</span>
+          <span className="detail-value">{Number(ai.ratings.studyAssistance).toFixed(1)}/10</span>
         </div>
         <div className="detail-item">
           <span className="detail-label">性价比:</span>
-            <span className="detail-value">{ai.ratings.valueForMoney}/10</span>
+          <span className="detail-value">{Number(ai.ratings.valueForMoney).toFixed(1)}/10</span>
         </div>
       </div>
 
