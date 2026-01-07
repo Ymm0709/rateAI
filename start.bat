@@ -54,7 +54,7 @@ if not exist "node_modules" (
 
 REM 启动后端服务器
 echo [4/5] 启动后端服务器...
-start "Rate AI Backend" /min python manage.py runserver 127.0.0.1:8000
+start "Rate AI Backend" /min python manage.py runserver 0.0.0.0:8000
 
 REM 等待后端启动
 timeout /t 3 /nobreak >nul

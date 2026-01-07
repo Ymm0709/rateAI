@@ -6,7 +6,7 @@ if [ ! -d "node_modules" ]; then
 fi
 
 # 启动Django后端服务器（端口8000）
-python3 manage.py runserver 8000 > backend.log 2>&1 &
+python3 manage.py runserver 0.0.0.0:8000 > backend.log 2>&1 &
 BACKEND_PID=$!
 
 # 等待后端启动
