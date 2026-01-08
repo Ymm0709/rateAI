@@ -769,7 +769,7 @@ def api_root(request):
             <div class="section">
                 <h2>📝 使用说明</h2>
                 <ul>
-                    <li>前端应用运行在 <code>http://localhost:5173</code></li>
+                    <li>前端应用运行在 <code>http://localhost:5009</code></li>
                     <li>后端API运行在 <code>http://127.0.0.1:5009</code></li>
                     <li>访问 <a href="/admin/">/admin/</a> 管理数据库内容</li>
                     <li>首次使用需要创建超级用户：<code>python manage.py createsuperuser</code></li>

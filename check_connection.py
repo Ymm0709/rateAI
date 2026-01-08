@@ -51,20 +51,20 @@ def check_backend():
 def check_frontend():
     """检查前端服务"""
     print("\n" + "=" * 50)
-    print("检查前端服务 (http://localhost:5173)")
+    print("检查前端服务 (http://localhost:5009)")
     print("=" * 50)
     
     # 检查端口
-    if check_port('127.0.0.1', 5173):
-        print("✓ 端口 5173 已开放")
+    if check_port('127.0.0.1', 5009):
+        print("✓ 端口 5009 已开放")
     else:
-        print("✗ 端口 5173 未开放 - 前端可能未运行")
+        print("✗ 端口 5009 未开放 - 前端可能未运行")
         print("  请运行: npm run dev")
         return False
     
     # 检查前端页面
     try:
-        response = requests.get('http://localhost:5173/', timeout=2)
+        response = requests.get('http://localhost:5009/', timeout=2)
         if response.status_code == 200:
             print("✓ 前端页面可访问")
             print(f"  响应状态: {response.status_code}")
@@ -93,7 +93,7 @@ def check_cors():
         response = requests.options(
             'http://127.0.0.1:5009/api/ais/',
             headers={
-                'Origin': 'http://localhost:5173',
+                'Origin': 'http://localhost:5009',
                 'Access-Control-Request-Method': 'GET'
             },
             timeout=2
