@@ -73,7 +73,7 @@ echo   ✓ 服务器启动成功！
 echo ========================================
 echo.
 echo 后端服务器: http://127.0.0.1:5009
-echo 前端服务器: http://localhost:5009
+echo 前端服务器: http://localhost:5008
 echo API 文档:   http://127.0.0.1:5009
 echo 管理界面:   http://127.0.0.1:5009/admin
 echo.

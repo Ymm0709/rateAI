@@ -51,7 +51,7 @@ start.bat
 
 **服务器地址：**
 - 后端：http://127.0.0.1:5009
-- 前端：http://localhost:5009
+- 前端：http://localhost:5008
 - 管理界面：http://127.0.0.1:5009/admin
 
 **停止服务器：** 按 `Ctrl+C`
@@ -127,7 +127,7 @@ npm run dev
 ./start-dev.sh
 ```
 
-前端服务器将在 `http://localhost:5009` 运行
+前端服务器将在 `http://localhost:5008` 运行
 
 #### 构建生产版本
 ```bash

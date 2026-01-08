@@ -12,11 +12,11 @@ BACKEND_PID=$!
 # 等待后端启动
 sleep 2
 
-# 启动Vite前端服务器（端口5009）
+# 启动Vite前端服务器（端口5008）
 npm run dev > frontend.log 2>&1 &
 FRONTEND_PID=$!
 
 echo "后端: http://127.0.0.1:5009 (PID: $BACKEND_PID)"
-echo "前端: http://localhost:5009 (PID: $FRONTEND_PID)"
+echo "前端: http://localhost:5008 (PID: $FRONTEND_PID)"
 echo "停止: kill $BACKEND_PID $FRONTEND_PID"
 

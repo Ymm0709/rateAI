@@ -55,8 +55,8 @@ MIDDLEWARE = [
 
 # CORS设置
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5009",
-    "http://127.0.0.1:5009",
+    "http://localhost:5008",
+    "http://127.0.0.1:5008",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -158,6 +158,6 @@ REST_FRAMEWORK = {
 
 # 为API视图禁用CSRF检查
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5009',
-    'http://127.0.0.1:5009',
+    'http://localhost:5008',
+    'http://127.0.0.1:5008',
 ]
